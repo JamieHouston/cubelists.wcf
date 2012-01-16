@@ -238,6 +238,12 @@ SELECT * FROM Cube WHERE ParentKey = @ParentKey
 END
 GO
 
+CREATE PROCEDURE GetCubesByCubeType(
+@CubeType	VARCHAR(50))
+AS
+SELECT * FROM Cube WHERE CubeType = @CubeType
+GO
+
 
 /*** CREATE DEFAULTS **/
 
@@ -247,10 +253,6 @@ GO
 
 -- Master List
 EXEC CreateCube 'Lists', 'Lists', 'System', 'Lists'
-GO
-
--- Example first list
-EXEC CreateCube 'List1', 'List 1', 'Lists', 'Lists'
 GO
 
 -- Master Type
@@ -266,6 +268,17 @@ GO
 
 -- Master Entity
 EXEC CreateCube 'Entities', 'Entities', 'System', 'Types'
+GO
+
+
+-- Example first list
+EXEC CreateCube 'Grocery', 'Grocery List', 'Lists', 'Lists'
+GO
+
+EXEC CreateCube 'GroceryBought', 'Bought', 'Grocery', 'Checkbox'
+GO
+
+EXEC CreateCube 'GroceryToBuy', 'To Buy', 'Grocery', 'String'
 GO
 
 USE CubeLists

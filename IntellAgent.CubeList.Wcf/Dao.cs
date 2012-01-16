@@ -13,8 +13,33 @@ namespace IntellAgent.CubeList.Wcf {
         }
 
         public static CubeItem GetCube(string keyName) {
-            KeyValuePair<string, object> parameter = new KeyValuePair<string, object>("KeyName", keyName);
-            return GetCubes("GetCubeByKey", new List<KeyValuePair<string, object>> { parameter }).FirstOrDefault();
+            return GetCubes("GetCubeByKey", CreateParameterList("KeyName", keyName)).FirstOrDefault();
+        }
+
+        public static void Delete(string keyName)
+        {
+            using (SqlConnection connection = new SqlConnection(_connectionString)) {
+                using (SqlCommand command = new SqlCommand("DeleteCubeByKey", connection)) {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("KeyName", keyName);
+
+                    connection.Open();
+
+                    command.ExecuteNonQuery();
+
+                    connection.Close();
+                }
+            }
+        }
+
+        public static IList<CubeItem> GetCubeRows(string keyName)
+        {
+            IList<CubeItem> cubes = GetCubes("GetCubesByCubeType",CreateParameterList("CubeType", keyName));
+            foreach (var cubeItem in cubes.OrderBy(cube => cube.CubeValue))
+            {
+                cubeItem.Cubes = GetCubes("GetCubesByParentKey", CreateParameterList("ParentKey", cubeItem.KeyName));
+            }
+            return cubes;
         }
 
         public static int Create(CubeItem cubeItem)
@@ -38,18 +63,23 @@ namespace IntellAgent.CubeList.Wcf {
             return id;
         }
 
-        public static dynamic GetCubeWithChildren(string parentKey) {
-            KeyValuePair<string, object> parameter = new KeyValuePair<string, object>("ParentKey", parentKey);
-            CubeItem cube = GetCubes("GetCubeByKey",
-                new List<KeyValuePair<string, object>>{
-                                    new KeyValuePair<string, object>("KeyName", parentKey)}).FirstOrDefault();
+        public static CubeItem GetCubeWithChildren(string parentKey) {
+            CubeItem cube = GetCubes("GetCubeByKey",CreateParameterList("KeyName", parentKey)).FirstOrDefault();
 
-            IList<CubeItem> children = GetCubes("GetCubesByParentKey",
-                new List<KeyValuePair<string, object>>{
-                                    new KeyValuePair<string, object>("ParentKey", parentKey)});
+            IList<CubeItem> children = GetCubes("GetCubesByParentKey", CreateParameterList("ParentKey", parentKey));
 
             cube.Cubes = children;
             return cube;
+        }
+
+        private static List<KeyValuePair<string,object>> CreateParameterList(string key, string value)
+        {
+            return new List<KeyValuePair<string, object>> {CreateParameter(key, value)};
+        }
+
+        private static KeyValuePair<string,object> CreateParameter(string key, string value)
+        {
+            return new KeyValuePair<string, object>(key, value);
         }
 
         private static IList<CubeItem> GetCubes(string procedure, List<KeyValuePair<string, object>> parameters = null) {
