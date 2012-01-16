@@ -1,0 +1,1 @@
+<%@ Application Codebehind="Global.asax.cs" Inherits="IntellAgent.CubeList.Wcf.Global" Language="C#" %>
