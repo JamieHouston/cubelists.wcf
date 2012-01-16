@@ -12,31 +12,33 @@ namespace IntellAgent.CubeList.Wcf {
             return GetCubes("GetCubes");
         }
 
-        public static CubeItem GetCube(string keyName)
-        {
+        public static CubeItem GetCube(string keyName) {
             KeyValuePair<string, object> parameter = new KeyValuePair<string, object>("KeyName", keyName);
             return GetCubes("GetCubeByKey", new List<KeyValuePair<string, object>> { parameter }).FirstOrDefault();
         }
 
         public static int Create(CubeItem cubeItem)
         {
-            using (SqlConnection connection = new SqlConnection(_connectionString))
-            {
-                using (SqlCommand command = new SqlCommand("CreateCube"))
-                {
+            int id = 0;
+            using (SqlConnection connection = new SqlConnection(_connectionString)) {
+                using (SqlCommand command = new SqlCommand("CreateCube", connection)) {
                     command.CommandType = CommandType.StoredProcedure;
                     command.Parameters.AddWithValue("KeyName", cubeItem.KeyName);
                     command.Parameters.AddWithValue("CubeType", cubeItem.CubeType);
                     command.Parameters.AddWithValue("ParentKey", cubeItem.ParentKey);
                     command.Parameters.AddWithValue("CubeValue", cubeItem.CubeValue);
 
-                    return (int)command.ExecuteScalar();
+                    connection.Open();
+                    var result = command.ExecuteScalar();
+                    int.TryParse(result.ToString(), out id);
+
+                    connection.Close();
                 }
             }
+            return id;
         }
 
-        public static dynamic GetCubeWithChildren(string parentKey)
-        {
+        public static dynamic GetCubeWithChildren(string parentKey) {
             KeyValuePair<string, object> parameter = new KeyValuePair<string, object>("ParentKey", parentKey);
             CubeItem cube = GetCubes("GetCubeByKey",
                 new List<KeyValuePair<string, object>>{
@@ -57,9 +59,8 @@ namespace IntellAgent.CubeList.Wcf {
 
                 using (SqlCommand cmd = new SqlCommand(procedure, connection)) {
                     cmd.CommandType = CommandType.StoredProcedure;
-                    
-                    if (parameters != null)
-                    {
+
+                    if (parameters != null) {
                         parameters.ForEach(parameter =>
                                            cmd.Parameters.AddWithValue(parameter.Key, parameter.Value));
                     }
