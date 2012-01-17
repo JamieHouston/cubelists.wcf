@@ -19,7 +19,7 @@ namespace IntellAgent.CubeList.Wcf {
             return ConvertToJsonStream(value);
         }
 
-        [WebGet(UriTemplate = "List/{keyName}", ResponseFormat = WebMessageFormat.Json)]
+        [WebGet(UriTemplate = "lists/{keyName}", ResponseFormat = WebMessageFormat.Json)]
         public Stream GetCubeRows(string keyName) {
             var value = Dao.GetCubeRows(keyName);
             return ConvertToJsonStream(value);

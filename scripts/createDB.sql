@@ -266,6 +266,9 @@ GO
 EXEC CreateCube 'Bool', 'Checkbox', 'Types', 'Types'
 GO
 
+EXEC CreateCube 'DateTime', 'DateTime', 'Types', 'Types'
+GO
+
 -- Master Entity
 EXEC CreateCube 'Entities', 'Entities', 'System', 'Types'
 GO

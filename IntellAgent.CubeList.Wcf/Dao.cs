@@ -34,7 +34,8 @@ namespace IntellAgent.CubeList.Wcf {
 
         public static IList<CubeItem> GetCubeRows(string keyName)
         {
-            IList<CubeItem> cubes = GetCubes("GetCubesByCubeType",CreateParameterList("CubeType", keyName));
+            IList<CubeItem> cubes = GetCubes("GetCubesByParentKey", CreateParameterList("ParentKey", keyName)).Where(child => child.CubeType == "CubeData").ToList();
+
             foreach (var cubeItem in cubes.OrderBy(cube => cube.CubeValue))
             {
                 cubeItem.Cubes = GetCubes("GetCubesByParentKey", CreateParameterList("ParentKey", cubeItem.KeyName));
@@ -66,7 +67,7 @@ namespace IntellAgent.CubeList.Wcf {
         public static CubeItem GetCubeWithChildren(string parentKey) {
             CubeItem cube = GetCubes("GetCubeByKey",CreateParameterList("KeyName", parentKey)).FirstOrDefault();
 
-            IList<CubeItem> children = GetCubes("GetCubesByParentKey", CreateParameterList("ParentKey", parentKey));
+            IList<CubeItem> children = GetCubes("GetCubesByParentKey", CreateParameterList("ParentKey", parentKey)).Where(child => child.CubeType != "CubeData").ToList();
 
             cube.Cubes = children;
             return cube;
